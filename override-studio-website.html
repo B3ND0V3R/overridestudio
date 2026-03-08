@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Override Studio</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f4faf6;
+      --border: rgba(16,185,129,0.2);
+      --cyan: #059652;
+      --cyan-dim: rgba(16,185,129,0.08);
+      --cyan-glow: rgba(16,185,129,0.35);
+      --white: #0a0a0a;
+      --muted: #6b7280;
+      --mono: 'DM Sans', sans-serif;
+      --sans: 'Outfit', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: var(--sans);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* CUSTOM CURSOR */
+    .cursor {
+      position: fixed; width: 10px; height: 10px;
+      background: var(--cyan); border-radius: 50%;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s, width 0.2s, height 0.2s, opacity 0.2s;
+      mix-blend-mode: screen;
+    }
+    .cursor-ring {
+      position: fixed; width: 36px; height: 36px;
+      border: 1px solid var(--cyan); border-radius: 50%;
+      pointer-events: none; z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.12s ease, width 0.2s, height 0.2s;
+      opacity: 0.5;
+    }
+
+    /* GRID BACKGROUND */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(5,150,82,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(5,150,82,0.06) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none; z-index: 0;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 60px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-family: var(--mono);
+      font-size: 1rem;
+      color: var(--cyan);
+      letter-spacing: 0.1em;
+      text-decoration: none;
+    }
+    .logo span { color: var(--white); }
+    nav ul { list-style: none; display: flex; gap: 40px; }
+    nav ul a {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: #555;
+      text-decoration: none;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    nav ul a:hover { color: var(--cyan); }
+    .nav-cta {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      border: 1px solid var(--cyan);
+      padding: 10px 22px;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+    .nav-cta:hover {
+      background: var(--cyan);
+      color: #ffffff;
+      box-shadow: 0 0 24px var(--cyan-glow);
+    }
+
+    /* HERO */
+    #hero {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: flex-start;
+      padding: 140px 60px 80px;
+      overflow: hidden;
+    }
+    .hero-tag {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--cyan);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.2s forwards;
+    }
+    .hero-tag::before { content: '// '; opacity: 0.5; }
+    h1 {
+      font-size: clamp(3.5rem, 8vw, 8rem);
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      max-width: 900px;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.35s forwards;
+    }
+    h1 .accent { color: var(--cyan); position: relative; display: inline-block; }
+    .hero-sub {
+      margin-top: 32px;
+      font-size: 1.1rem;
+      color: rgba(10,10,10,0.55);
+      max-width: 520px;
+      line-height: 1.7;
+      font-weight: 400;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.5s forwards;
+    }
+    .hero-actions {
+      margin-top: 48px;
+      display: flex; gap: 20px; flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.65s forwards;
+    }
+    .btn-primary {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: var(--cyan);
+      color: #ffffff;
+      padding: 16px 36px;
+      text-decoration: none;
+      font-weight: 700;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .btn-primary:hover {
+      box-shadow: 0 0 40px var(--cyan-glow);
+      transform: translateY(-2px);
+    }
+    .btn-ghost {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: 1px solid #ccc;
+      color: #0a0a0a;
+      padding: 16px 36px;
+      text-decoration: none;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .btn-ghost:hover {
+      border-color: var(--cyan);
+      box-shadow: 0 0 20px var(--cyan-dim);
+      transform: translateY(-2px);
+    }
+
+    /* Stats strip */
+    .stats-strip {
+      position: relative; z-index: 1;
+      display: flex; gap: 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      opacity: 0;
+      animation: fadeUp 0.9s 0.8s forwards;
+    }
+    .stat {
+      flex: 1; padding: 32px 60px;
+      border-right: 1px solid var(--border);
+    }
+    .stat:last-child { border-right: none; }
+    .stat-num {
+      font-family: var(--mono);
+      font-size: 2.5rem;
+      color: var(--cyan);
+      display: block;
+      line-height: 1;
+    }
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #888;
+      margin-top: 8px;
+      display: block;
+    }
+
+    /* SECTIONS */
+    section { position: relative; z-index: 1; }
+
+    .section-header {
+      display: flex; align-items: baseline; gap: 20px;
+      margin-bottom: 64px;
+    }
+    .section-num {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--cyan);
+      letter-spacing: 0.2em;
+    }
+    h2 {
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .section-line {
+      flex: 1; height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+
+    /* WORK / PORTFOLIO */
+    #work { padding: 100px 60px; }
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 2px;
+    }
+    .project-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 48px 40px;
+      position: relative; overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s;
+      cursor: none;
+    }
+    .project-card:hover {
+      border-color: var(--cyan);
+      transform: translateY(-4px);
+    }
+    .project-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at top left, var(--cyan-dim), transparent 60%);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .project-card:hover::before { opacity: 1; }
+    .card-lg { grid-column: span 7; }
+    .card-sm { grid-column: span 5; }
+    .card-md { grid-column: span 4; }
+    .card-full { grid-column: span 12; display: flex; gap: 60px; align-items: flex-start; }
+    .project-tag {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      opacity: 0.7;
+      margin-bottom: 16px;
+    }
+    .project-name {
+      font-size: 1.6rem;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .project-desc {
+      font-size: 0.9rem;
+      color: rgba(10,10,10,0.5);
+      line-height: 1.6;
+      max-width: 340px;
+    }
+    .project-arrow {
+      position: absolute; bottom: 40px; right: 40px;
+      font-family: var(--mono);
+      font-size: 1.5rem;
+      color: var(--cyan);
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .project-card:hover .project-arrow { opacity: 1; transform: translate(4px, -4px); }
+    .project-status {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border: 1px solid;
+      margin-bottom: 20px;
+    }
+    .status-live { color: #00ff88; border-color: rgba(0,255,136,0.3); background: rgba(0,255,136,0.05); }
+    .status-wip { color: #ffaa00; border-color: rgba(255,170,0,0.3); background: rgba(255,170,0,0.05); }
+    .status-custom { color: var(--cyan); border-color: var(--border); background: var(--cyan-dim); }
+
+    /* ABOUT */
+    #about {
+      padding: 100px 60px;
+      background: linear-gradient(180deg, transparent, rgba(0,210,255,0.02), transparent);
+    }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+    .about-text p {
+      font-size: 1rem;
+      color: rgba(10,10,10,0.6);
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+    .about-text p strong { color: var(--white); font-weight: 600; }
+    .about-text .highlight {
+      color: var(--white);
+      font-size: 1.4rem;
+      font-weight: 600;
+      line-height: 1.5;
+      margin-bottom: 28px;
+    }
+
+    .team-cards { display: flex; flex-direction: column; gap: 2px; }
+    .team-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 32px 36px;
+      display: flex; gap: 24px; align-items: center;
+      transition: border-color 0.3s;
+    }
+    .team-card:hover { border-color: var(--cyan); }
+    .avatar {
+      width: 52px; height: 52px;
+      background: var(--cyan-dim);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono);
+      font-size: 1rem;
+      color: var(--cyan);
+      flex-shrink: 0;
+    }
+    .team-name { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .team-role {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      opacity: 0.7;
+    }
+
+    /* SERVICES */
+    #services { padding: 100px 60px; }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+    .service-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 48px 40px;
+      position: relative; overflow: hidden;
+      transition: border-color 0.3s;
+    }
+    .service-card:hover { border-color: var(--cyan); }
+    .service-icon {
+      font-family: var(--mono);
+      font-size: 1.8rem;
+      color: var(--cyan);
+      margin-bottom: 24px;
+      display: block;
+    }
+    .service-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+    .service-desc {
+      font-size: 0.875rem;
+      color: rgba(10,10,10,0.5);
+      line-height: 1.7;
+    }
+
+    /* CONTACT */
+    #contact { padding: 100px 60px; }
+    .contact-inner {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 80px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+    }
+    .contact-copy h3 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+    .contact-copy p {
+      font-size: 0.95rem;
+      color: rgba(10,10,10,0.5);
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+    .contact-info {
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .contact-info a {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--cyan);
+      text-decoration: none;
+      letter-spacing: 0.1em;
+      transition: opacity 0.2s;
+    }
+    .contact-info a:hover { opacity: 0.7; }
+    .contact-form { display: flex; flex-direction: column; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #888;
+    }
+    input, textarea, select {
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      color: #0a0a0a;
+      font-family: var(--mono);
+      font-size: 0.875rem;
+      padding: 14px 18px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      resize: none;
+    }
+    select option { background: #ffffff; color: #0a0a0a; }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 16px var(--cyan-dim);
+    }
+    select option { background: var(--surface); }
+    textarea { min-height: 120px; }
+    .form-submit {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: var(--cyan);
+      color: #ffffff;
+      border: none;
+      padding: 16px 36px;
+      cursor: none;
+      font-weight: 700;
+      transition: box-shadow 0.2s, transform 0.2s;
+      align-self: flex-start;
+    }
+    .form-submit:hover {
+      box-shadow: 0 0 32px var(--cyan-glow);
+      transform: translateY(-2px);
+    }
+
+    /* FOOTER */
+    footer {
+      position: relative; z-index: 1;
+      padding: 40px 60px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-logo {
+      font-family: var(--mono);
+      font-size: 0.875rem;
+      color: var(--cyan);
+    }
+    .footer-copy {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: #888;
+    }
+    .footer-links { display: flex; gap: 32px; }
+    .footer-links a {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #888;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--cyan); }
+
+      );
+
+    /* GLITCH TEXT */
+    .glitch {
+      position: relative;
+      display: inline-block;
+    }
+    .glitch::before, .glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+    .glitch::before {
+      color: var(--cyan);
+      animation: glitch1 4s infinite;
+      clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+    }
+    .glitch::after {
+      color: #047857;
+      animation: glitch2 4s infinite;
+      clip-path: polygon(0 60%, 100% 60%, 100% 75%, 0 75%);
+    }
+
+    /* TICKER */
+    .ticker-wrap {
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 0;
+      background: var(--surface);
+    }
+    .ticker {
+      display: flex;
+      animation: ticker 25s linear infinite;
+      white-space: nowrap;
+    }
+    .ticker-item {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #888;
+      padding: 0 48px;
+    }
+    .ticker-item .dot { color: var(--cyan); margin: 0 12px; }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    @keyframes glitch1 {
+      0%, 90%, 100% { transform: none; opacity: 0; }
+      92% { transform: translate(-2px, 0); opacity: 0.8; }
+      94% { transform: translate(2px, 0); opacity: 0.8; }
+      96% { transform: none; opacity: 0; }
+    }
+    @keyframes glitch2 {
+      0%, 85%, 100% { transform: none; opacity: 0; }
+      87% { transform: translate(2px, 0); opacity: 0.6; }
+      89% { transform: translate(-2px, 0); opacity: 0.6; }
+      91% { transform: none; opacity: 0; }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.7s, transform 0.7s;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* Mobile */
+    @media (max-width: 900px) {
+      nav { padding: 18px 24px; }
+      nav ul { display: none; }
+      #hero { padding: 120px 24px 60px; }
+      .stats-strip { flex-direction: column; }
+      .stat { border-right: none; border-bottom: 1px solid var(--border); padding: 24px; }
+      #work, #about, #services, #contact { padding: 80px 24px; }
+      .card-lg, .card-sm, .card-md, .card-full { grid-column: span 12; flex-direction: column; gap: 20px; }
+      .about-grid, .contact-inner { grid-template-columns: 1fr; gap: 40px; }
+      .services-grid { grid-template-columns: 1fr; }
+      .contact-inner { padding: 40px 24px; }
+      footer { flex-direction: column; gap: 20px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- CURSOR -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#hero" class="logo">OVERRIDE<span>_STUDIO</span></a>
+    <ul>
+      <li><a href="#work">Work</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <a href="#contact" class="nav-cta">Start a Project</a>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <p class="hero-tag">App Development Studio</p>
+    <h1>
+      <span class="glitch" data-text="Build">Build</span> Apps<br/>
+      That <span class="accent">Override</span><br/>
+      The Norm.
+    </h1>
+    <p class="hero-sub">
+      Custom-built applications for your personal needs — and large-scale products engineered for everyone's daily life. We build what the future requires.
+    </p>
+    <div class="hero-actions">
+      <a href="#work" class="btn-primary">View Our Work</a>
+      <a href="#contact" class="btn-ghost">Get a Custom App</a>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats-strip">
+    <div class="stat">
+      <span class="stat-num">∞</span>
+      <span class="stat-label">Scalability Ceiling</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">2</span>
+      <span class="stat-label">Active Big Projects</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">01</span>
+      <span class="stat-label">Studio, Zero Compromises</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">24/7</span>
+      <span class="stat-label">Always Shipping</span>
+    </div>
+  </div>
+
+  <!-- TICKER -->
+  <div class="ticker-wrap">
+    <div class="ticker">
+      <span class="ticker-item">Mobile Apps <span class="dot">◆</span></span>
+      <span class="ticker-item">Web Platforms <span class="dot">◆</span></span>
+      <span class="ticker-item">Custom Dev <span class="dot">◆</span></span>
+      <span class="ticker-item">API Integration <span class="dot">◆</span></span>
+      <span class="ticker-item">UI/UX Design <span class="dot">◆</span></span>
+      <span class="ticker-item">Full Stack <span class="dot">◆</span></span>
+      <span class="ticker-item">iOS & Android <span class="dot">◆</span></span>
+      <span class="ticker-item">SaaS Products <span class="dot">◆</span></span>
+      <!-- duplicate for seamless loop -->
+      <span class="ticker-item">Mobile Apps <span class="dot">◆</span></span>
+      <span class="ticker-item">Web Platforms <span class="dot">◆</span></span>
+      <span class="ticker-item">Custom Dev <span class="dot">◆</span></span>
+      <span class="ticker-item">API Integration <span class="dot">◆</span></span>
+      <span class="ticker-item">UI/UX Design <span class="dot">◆</span></span>
+      <span class="ticker-item">Full Stack <span class="dot">◆</span></span>
+      <span class="ticker-item">iOS & Android <span class="dot">◆</span></span>
+      <span class="ticker-item">SaaS Products <span class="dot">◆</span></span>
+    </div>
+  </div>
+
+  <!-- WORK -->
+  <section id="work">
+    <div class="section-header reveal">
+      <span class="section-num">01 /</span>
+      <h2>Our Work</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="projects-grid">
+      <div class="project-card card-lg reveal">
+        <div class="project-tag">Flagship Product</div>
+        <span class="project-status status-wip">In Development</span>
+        <div class="project-name">Project Alpha</div>
+        <p class="project-desc">A large-scale daily-use platform being engineered for everyone. Solving real everyday problems with clean, intuitive app design.</p>
+        <span class="project-arrow">↗</span>
+      </div>
+      <div class="project-card card-sm reveal">
+        <div class="project-tag">Consumer App</div>
+        <span class="project-status status-wip">In Development</span>
+        <div class="project-name">Project Beta</div>
+        <p class="project-desc">The second pillar of Override Studio's public product suite. Built for scale from day one.</p>
+        <span class="project-arrow">↗</span>
+      </div>
+      <div class="project-card card-md reveal">
+        <div class="project-tag">Custom Build</div>
+        <span class="project-status status-custom">Custom Order</span>
+        <div class="project-name">Personal App</div>
+        <p class="project-desc">Tailored application built for a client's unique workflow needs.</p>
+        <span class="project-arrow">↗</span>
+      </div>
+      <div class="project-card card-md reveal">
+        <div class="project-tag">Custom Build</div>
+        <span class="project-status status-live">Live</span>
+        <div class="project-name">Business Tool</div>
+        <p class="project-desc">Internal tooling and automation built for an SMB to replace manual workflows.</p>
+        <span class="project-arrow">↗</span>
+      </div>
+      <div class="project-card card-md reveal">
+        <div class="project-tag">Web App</div>
+        <span class="project-status status-live">Live</span>
+        <div class="project-name">Client Portal</div>
+        <p class="project-desc">Custom client-facing dashboard designed and deployed for a service business.</p>
+        <span class="project-arrow">↗</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="services">
+    <div class="section-header reveal">
+      <span class="section-num">02 /</span>
+      <h2>What We Build</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="services-grid">
+      <div class="service-card reveal">
+        <span class="service-icon">[APP]</span>
+        <div class="service-name">Custom App Dev</div>
+        <p class="service-desc">Need an app for your personal or business use? We scope, design, and ship it — built exactly how you need it, no bloat.</p>
+      </div>
+      <div class="service-card reveal">
+        <span class="service-icon">[SYS]</span>
+        <div class="service-name">Mass-Market Products</div>
+        <p class="service-desc">We're not just a dev shop — we create and own products designed for everyone's daily life. Backed by original vision.</p>
+      </div>
+      <div class="service-card reveal">
+        <span class="service-icon">[API]</span>
+        <div class="service-name">Integration & Backend</div>
+        <p class="service-desc">Connecting your systems, automating your workflows, and building the backend infrastructure that keeps everything running.</p>
+      </div>
+      <div class="service-card reveal">
+        <span class="service-icon">[MOB]</span>
+        <div class="service-name">iOS & Android</div>
+        <p class="service-desc">Native and cross-platform mobile experiences that feel polished and perform at scale. From prototype to App Store.</p>
+      </div>
+      <div class="service-card reveal">
+        <span class="service-icon">[WEB]</span>
+        <div class="service-name">Web Platforms</div>
+        <p class="service-desc">Full-stack web applications — dashboards, SaaS, e-commerce, booking systems. If it lives in a browser, we build it right.</p>
+      </div>
+      <div class="service-card reveal">
+        <span class="service-icon">[UX_]</span>
+        <div class="service-name">Design & Prototyping</div>
+        <p class="service-desc">Every Override build starts with design. We prototype fast, validate early, and deliver interfaces users actually enjoy.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="section-header reveal">
+      <span class="section-num">03 /</span>
+      <h2>About the Studio</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <p class="highlight">"We build the apps you need — and the products the world's been waiting for."</p>
+        <p>Override Studio is a lean, focused app development studio. We take on <strong>custom builds for individuals and businesses</strong> who need software built the right way — on time, on spec, and with no unnecessary overhead.</p>
+        <p>At the same time, we're developing our own <strong>flagship products</strong> designed for everyday use at a mass scale. Big problems deserve well-engineered solutions, not afterthoughts.</p>
+        <p>Whether you come to us with a napkin idea or a fully specced brief, we turn it into working software.</p>
+      </div>
+      <div class="team-cards reveal">
+        <div class="team-card">
+          <div class="avatar">OS</div>
+          <div>
+            <div class="team-name">Override Studio</div>
+            <div class="team-role">Lead Developer & Founder</div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="avatar">FE</div>
+          <div>
+            <div class="team-name">Frontend Engineer</div>
+            <div class="team-role">UI / UX & Design Systems</div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="avatar">BE</div>
+          <div>
+            <div class="team-name">Backend Engineer</div>
+            <div class="team-role">APIs, Infrastructure & Scale</div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="avatar">PM</div>
+          <div>
+            <div class="team-name">Product & Strategy</div>
+            <div class="team-role">Roadmap, Scoping & Delivery</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="section-header reveal">
+      <span class="section-num">04 /</span>
+      <h2>Start a Project</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="contact-inner reveal">
+      <div class="contact-copy">
+        <h3>Got an idea?<br/>Let's build it.</h3>
+        <p>Whether you need a personal app, a business tool, or you want to be part of something bigger — reach out. We scope every project individually and move fast.</p>
+        <div class="contact-info">
+          <a href="/cdn-cgi/l/email-protection#452d2029292a052a332037372c2120363130212c2a6b2a3722"><span class="__cf_email__" data-cfemail="0c64696060634c637a697e7e6568697f787968656322637e6b">[email&#160;protected]</span></a>
+          <a href="http://www.overridestudio.org">www.overridestudio.org</a>
+        </div>
+      </div>
+      <form class="contact-form" onsubmit="handleSubmit(event)">
+        <div class="form-group">
+          <label>Your Name</label>
+          <input type="text" placeholder="John Doe" required />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" placeholder="you@example.com" required />
+        </div>
+        <div class="form-group">
+          <label>Project Type</label>
+          <select>
+            <option value="">Select a type...</option>
+            <option>Personal App</option>
+            <option>Business Tool</option>
+            <option>Mobile App (iOS/Android)</option>
+            <option>Web Platform</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tell Us About It</label>
+          <textarea placeholder="Describe your idea or project..."></textarea>
+        </div>
+        <button type="submit" class="form-submit">Send Message →</button>
+        <div id="form-success" style="display:none; font-family: var(--mono); font-size:0.75rem; color: #00ff88; letter-spacing:0.1em;">
+          ✓ Message received. We'll be in touch.
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">OVERRIDE_STUDIO</div>
+    <div class="footer-links">
+      <a href="#work">Work</a>
+      <a href="#services">Services</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <div class="footer-copy">© 2025 Override Studio. All rights reserved.</div>
+  </footer>
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    function animCursor() {
+      cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+      rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(animCursor);
+    }
+    animCursor();
+    document.querySelectorAll('a,button,.project-card,.service-card,.team-card').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursor.style.width = '18px'; cursor.style.height = '18px';
+        ring.style.width = '56px'; ring.style.height = '56px';
+      });
+      el.addEventListener('mouseleave', () => {
+        cursor.style.width = '10px'; cursor.style.height = '10px';
+        ring.style.width = '36px'; ring.style.height = '36px';
+      });
+    });
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 80);
+        }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => observer.observe(el));
+
+    // Form
+    function handleSubmit(e) {
+      e.preventDefault();
+      document.getElementById('form-success').style.display = 'block';
+      e.target.reset();
+    }
+
+    // Active nav link
+    const sections = document.querySelectorAll('section[id]');
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(s => {
+        if (wi
